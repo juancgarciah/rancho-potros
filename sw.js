@@ -1,5 +1,6 @@
 const CACHE_NAME = 'potrillos-v1';
 const ASSETS = [
+  './',
   './index.html',
   './manifest.json',
   'https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Libre+Baskerville:ital@0;1&family=Cormorant+Garamond:wght@300;400;600&display=swap'
