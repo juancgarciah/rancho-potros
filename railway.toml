@@ -3,4 +3,3 @@ builder = "NIXPACKS"
 
 [deploy]
 startCommand = "node server/server.js"
-healthcheckPath = "/api/foals"
