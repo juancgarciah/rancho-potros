@@ -1,0 +1,1077 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Potrillos — Registro de Crecimiento</title>
+
+<!-- PWA -->
+<link rel="manifest" href="./manifest.json">
+<meta name="theme-color" content="#3b2a1a">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Potrillos">
+<meta name="description" content="Seguimiento de etapas de crecimiento de tus potrillos">
+
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Libre+Baskerville:ital@0;1&family=Cormorant+Garamond:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --tierra: #3b2a1a;
+    --cuero: #7a5230;
+    --paja: #d4a85a;
+    --crema: #f5ead6;
+    --hueso: #ede0c8;
+    --verde-pasto: #4a5e3a;
+    --verde-claro: #7a9160;
+    --arena: #c9a96e;
+    --sombra: rgba(30,18,6,0.18);
+    --ink: #1e1206;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background-color: var(--crema);
+    background-image:
+      radial-gradient(ellipse at 80% 10%, rgba(212,168,90,0.13) 0%, transparent 60%),
+      radial-gradient(ellipse at 10% 90%, rgba(74,94,58,0.10) 0%, transparent 55%),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    color: var(--ink);
+    font-family: 'Libre Baskerville', serif;
+    min-height: 100vh;
+  }
+
+  /* ── HEADER ── */
+  header {
+    text-align: center;
+    padding: 56px 24px 36px;
+    position: relative;
+  }
+  header::after {
+    content: '';
+    display: block;
+    width: 120px;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--paja), transparent);
+    margin: 24px auto 0;
+  }
+  .brand-label {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 300;
+    font-size: 11px;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    color: var(--cuero);
+    margin-bottom: 12px;
+  }
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2.4rem, 6vw, 4rem);
+    font-weight: 700;
+    color: var(--tierra);
+    line-height: 1.1;
+  }
+  h1 em {
+    font-style: italic;
+    color: var(--cuero);
+  }
+  .subtitle {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.1rem;
+    color: var(--cuero);
+    margin-top: 10px;
+    font-style: italic;
+  }
+
+  /* ── TOOLBAR ── */
+  .toolbar {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    padding: 0 24px 40px;
+    flex-wrap: wrap;
+  }
+  .btn {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 13px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 10px 24px;
+    border: 1.5px solid var(--cuero);
+    background: transparent;
+    color: var(--cuero);
+    cursor: pointer;
+    transition: all 0.25s;
+    border-radius: 2px;
+  }
+  .btn:hover, .btn.active {
+    background: var(--cuero);
+    color: var(--crema);
+  }
+  .btn-primary {
+    background: var(--tierra);
+    border-color: var(--tierra);
+    color: var(--crema);
+  }
+  .btn-primary:hover {
+    background: var(--cuero);
+    border-color: var(--cuero);
+  }
+
+  /* ── GRID ── */
+  #grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 28px;
+    padding: 0 32px 60px;
+    max-width: 1280px;
+    margin: 0 auto;
+  }
+
+  /* ── CARD ── */
+  .card {
+    background: var(--hueso);
+    border: 1px solid rgba(122,82,48,0.2);
+    border-radius: 4px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px var(--sombra);
+    transition: transform 0.3s, box-shadow 0.3s;
+    animation: fadeUp 0.5s ease both;
+  }
+  .card:hover { transform: translateY(-4px); box-shadow: 0 10px 32px var(--sombra); }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .card-header {
+    background: linear-gradient(135deg, var(--tierra) 0%, var(--cuero) 100%);
+    padding: 20px 22px 16px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .card-avatar {
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.15);
+    border: 2px solid rgba(255,255,255,0.3);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px;
+    flex-shrink: 0;
+  }
+  .card-title-block { flex: 1; }
+  .card-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.35rem;
+    color: var(--crema);
+    font-weight: 700;
+  }
+  .card-meta {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 12px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: rgba(245,234,214,0.7);
+    margin-top: 3px;
+  }
+  .card-actions { display: flex; gap: 6px; }
+  .icon-btn {
+    width: 28px; height: 28px;
+    border: none; background: rgba(255,255,255,0.15);
+    border-radius: 2px; cursor: pointer;
+    color: var(--crema); font-size: 14px;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.2s;
+  }
+  .icon-btn:hover { background: rgba(255,255,255,0.3); }
+
+  /* stage progress */
+  .stage-track {
+    padding: 16px 22px 12px;
+    background: rgba(212,168,90,0.08);
+    border-bottom: 1px solid rgba(122,82,48,0.12);
+  }
+  .stage-label {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 11px; letter-spacing: 2px; text-transform: uppercase;
+    color: var(--cuero); margin-bottom: 8px;
+  }
+  .stage-dots {
+    display: flex; gap: 6px; flex-wrap: wrap;
+  }
+  .dot {
+    width: 28px; height: 6px; border-radius: 3px;
+    background: rgba(122,82,48,0.2);
+    transition: background 0.3s;
+    cursor: pointer;
+    position: relative;
+  }
+  .dot.done   { background: var(--verde-pasto); }
+  .dot.active { background: var(--paja); }
+  .dot:hover::after {
+    content: attr(data-tip);
+    position: absolute;
+    bottom: 12px; left: 50%;
+    transform: translateX(-50%);
+    background: var(--tierra);
+    color: var(--crema);
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 11px;
+    white-space: nowrap;
+    padding: 4px 8px;
+    border-radius: 2px;
+    pointer-events: none;
+    z-index: 10;
+  }
+
+  /* entries */
+  .entries { padding: 14px 22px; }
+  .entry-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 11px; letter-spacing: 2px; text-transform: uppercase;
+    color: var(--cuero); margin-bottom: 10px;
+  }
+  .entry {
+    display: flex; gap: 10px; align-items: flex-start;
+    padding: 8px 0;
+    border-bottom: 1px dashed rgba(122,82,48,0.15);
+  }
+  .entry:last-child { border-bottom: none; }
+  .entry-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--paja); flex-shrink: 0; margin-top: 5px;
+  }
+  .entry-date {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 11px; color: var(--cuero); white-space: nowrap;
+  }
+  .entry-text {
+    font-size: 13px; line-height: 1.5; color: var(--ink);
+    flex: 1;
+  }
+  .entry-stage-badge {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 10px; letter-spacing: 1px; text-transform: uppercase;
+    padding: 2px 7px; border-radius: 10px;
+    background: var(--verde-pasto); color: var(--crema);
+    white-space: nowrap; flex-shrink: 0;
+  }
+
+  /* card footer */
+  .card-footer {
+    padding: 10px 22px 14px;
+    display: flex; justify-content: space-between; align-items: center;
+    border-top: 1px solid rgba(122,82,48,0.12);
+  }
+  .footer-stat { text-align: center; }
+  .footer-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.3rem; color: var(--tierra); font-weight: 700;
+  }
+  .footer-lbl {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--cuero);
+  }
+  .add-entry-btn {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase;
+    padding: 7px 16px;
+    border: 1px solid var(--cuero);
+    background: transparent; color: var(--cuero);
+    cursor: pointer; border-radius: 2px; transition: all 0.2s;
+  }
+  .add-entry-btn:hover { background: var(--cuero); color: var(--crema); }
+
+  /* empty state */
+  .empty {
+    text-align: center;
+    padding: 80px 24px;
+    grid-column: 1/-1;
+  }
+  .empty-icon { font-size: 64px; margin-bottom: 20px; }
+  .empty h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.6rem; color: var(--tierra); margin-bottom: 10px;
+  }
+  .empty p { color: var(--cuero); font-size: 0.95rem; }
+
+  /* ── MODAL ── */
+  .overlay {
+    position: fixed; inset: 0;
+    background: rgba(30,18,6,0.55);
+    backdrop-filter: blur(3px);
+    z-index: 100;
+    display: flex; align-items: center; justify-content: center;
+    padding: 24px;
+    opacity: 0; pointer-events: none; transition: opacity 0.25s;
+  }
+  .overlay.open { opacity: 1; pointer-events: all; }
+  .modal {
+    background: var(--hueso);
+    border: 1px solid rgba(122,82,48,0.25);
+    border-radius: 4px;
+    padding: 32px;
+    width: 100%; max-width: 480px;
+    box-shadow: 0 20px 60px rgba(30,18,6,0.3);
+    transform: translateY(20px); transition: transform 0.25s;
+  }
+  .overlay.open .modal { transform: translateY(0); }
+  .modal h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.5rem; color: var(--tierra); margin-bottom: 22px;
+  }
+  .field { margin-bottom: 16px; }
+  label {
+    display: block;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 11px; letter-spacing: 2px; text-transform: uppercase;
+    color: var(--cuero); margin-bottom: 6px;
+  }
+  input, select, textarea {
+    width: 100%;
+    font-family: 'Libre Baskerville', serif;
+    font-size: 13px;
+    padding: 9px 12px;
+    border: 1.5px solid rgba(122,82,48,0.3);
+    border-radius: 2px;
+    background: var(--crema);
+    color: var(--ink);
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--cuero); }
+  textarea { resize: vertical; min-height: 80px; }
+  .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 22px; }
+  .stage-grid {
+    display: grid; grid-template-columns: repeat(3,1fr); gap: 8px;
+  }
+  .stage-opt {
+    padding: 8px 6px; text-align: center;
+    border: 1.5px solid rgba(122,82,48,0.25);
+    border-radius: 2px; cursor: pointer;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 12px; letter-spacing: 1px; text-transform: uppercase;
+    color: var(--cuero); background: transparent;
+    transition: all 0.2s;
+  }
+  .stage-opt.selected { background: var(--verde-pasto); color: var(--crema); border-color: var(--verde-pasto); }
+
+  .entry-actions {
+    display: flex; gap: 3px; flex-shrink: 0; opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .entry:hover .entry-actions { opacity: 1; }
+  .entry-act-btn {
+    width: 22px; height: 22px; border: none; background: transparent;
+    cursor: pointer; font-size: 12px; border-radius: 2px;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.2s;
+  }
+  .entry-act-btn:hover { background: rgba(122,82,48,0.12); }
+
+  /* ── STAGE MANAGER ── */
+  .stage-item {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--crema); border: 1.5px solid rgba(122,82,48,0.2);
+    border-radius: 3px; padding: 8px 10px;
+    cursor: default;
+    transition: box-shadow 0.2s, border-color 0.2s;
+  }
+  .stage-item.dragging { box-shadow: 0 6px 20px var(--sombra); border-color: var(--paja); opacity: 0.85; }
+  .stage-item.drag-over { border-color: var(--cuero); background: rgba(212,168,90,0.12); }
+  .drag-handle {
+    cursor: grab; color: var(--arena); font-size: 16px; flex-shrink: 0;
+    user-select: none;
+  }
+  .drag-handle:active { cursor: grabbing; }
+  .stage-input {
+    flex: 1; border: none; background: transparent;
+    font-family: 'Libre Baskerville', serif; font-size: 13px;
+    color: var(--ink); padding: 0; outline: none;
+  }
+  .stage-input:focus { color: var(--tierra); }
+  .del-stage-btn {
+    width: 24px; height: 24px; border-radius: 2px;
+    border: none; background: transparent; cursor: pointer;
+    color: rgba(122,82,48,0.5); font-size: 15px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    transition: color 0.2s, background 0.2s;
+  }
+  .del-stage-btn:hover { color: #c0392b; background: rgba(192,57,43,0.08); }
+  .stage-num {
+    font-family: 'Cormorant Garamond', serif; font-size: 11px;
+    letter-spacing: 1px; color: var(--arena); width: 18px;
+    text-align: right; flex-shrink: 0;
+  }
+
+  /* ── PWA INSTALL BANNER ── */
+  #installBanner {
+    display: none;
+    position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+    background: var(--tierra);
+    color: var(--crema);
+    border-radius: 6px;
+    padding: 14px 20px;
+    box-shadow: 0 8px 32px rgba(30,18,6,0.35);
+    z-index: 200;
+    align-items: center; gap: 14px;
+    max-width: 420px; width: calc(100% - 40px);
+    animation: slideUp 0.4s ease;
+  }
+  #installBanner.show { display: flex; }
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+    to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+  }
+  .install-icon { font-size: 28px; flex-shrink: 0; }
+  .install-text { flex: 1; }
+  .install-text strong {
+    display: block;
+    font-family: 'Playfair Display', serif;
+    font-size: 0.95rem; margin-bottom: 2px;
+  }
+  .install-text span {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 12px; letter-spacing: 0.5px;
+    color: rgba(245,234,214,0.75);
+  }
+  .install-btns { display: flex; gap: 8px; flex-shrink: 0; }
+  .install-yes {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase;
+    padding: 7px 14px;
+    background: var(--paja); border: none;
+    color: var(--tierra); cursor: pointer; border-radius: 2px;
+    font-weight: 600; transition: opacity 0.2s;
+  }
+  .install-yes:hover { opacity: 0.85; }
+  .install-no {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 12px; letter-spacing: 1px; text-transform: uppercase;
+    padding: 7px 10px;
+    background: transparent; border: 1px solid rgba(245,234,214,0.3);
+    color: rgba(245,234,214,0.7); cursor: pointer; border-radius: 2px;
+    transition: border-color 0.2s;
+  }
+  .install-no:hover { border-color: rgba(245,234,214,0.6); }
+
+  /* ── OFFLINE BADGE ── */
+  #offlineBadge {
+    display: none;
+    position: fixed; top: 14px; right: 14px;
+    background: var(--cuero); color: var(--crema);
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase;
+    padding: 5px 12px; border-radius: 20px;
+    z-index: 300; box-shadow: 0 2px 10px var(--sombra);
+  }
+  #offlineBadge.show { display: block; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 500px) {
+    #grid { padding: 0 16px 40px; gap: 18px; }
+    .toolbar { padding: 0 16px 30px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand-label">Haras — Registro Equino</div>
+  <h1>Mis <em>Potrillos</em></h1>
+  <p class="subtitle">Seguimiento de etapas de crecimiento</p>
+</header>
+
+<div class="toolbar">
+  <button class="btn active" onclick="setFilter('all',this)">Todos</button>
+  <button class="btn" onclick="setFilter('macho',this)">Machos</button>
+  <button class="btn" onclick="setFilter('hembra',this)">Hembras</button>
+  <button class="btn-primary btn" onclick="openAddFoal()">+ Agregar Potrillo</button>
+  <button class="btn" onclick="openStagesManager()">⚙ Gestionar Etapas</button>
+</div>
+
+<!-- PWA Install Banner -->
+<div id="installBanner">
+  <div class="install-icon">🐴</div>
+  <div class="install-text">
+    <strong>Instalar Potrillos</strong>
+    <span>Accede sin internet, como app nativa</span>
+  </div>
+  <div class="install-btns">
+    <button class="install-yes" onclick="installPWA()">Instalar</button>
+    <button class="install-no" onclick="dismissInstall()">✕</button>
+  </div>
+</div>
+
+<!-- Offline Badge -->
+<div id="offlineBadge">⚡ Sin conexión</div>
+
+<div id="grid"></div>
+
+<!-- Modal Potrillo -->
+<div class="overlay" id="foalModal">
+  <div class="modal">
+    <h2 id="modalTitle">Nuevo Potrillo</h2>
+    <div class="field">
+      <label>Nombre</label>
+      <input type="text" id="fName" placeholder="Ej. Viento del Norte">
+    </div>
+    <div class="field">
+      <label>Fecha de nacimiento</label>
+      <input type="date" id="fDob">
+    </div>
+    <div class="field">
+      <label>Sexo</label>
+      <select id="fSex">
+        <option value="macho">Macho</option>
+        <option value="hembra">Hembra</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Raza / Linaje</label>
+      <input type="text" id="fBreed" placeholder="Ej. Cuarto de Milla">
+    </div>
+    <div class="field">
+      <label>Madre</label>
+      <input type="text" id="fMother" placeholder="Nombre de la yegua">
+    </div>
+    <div class="field">
+      <label>Padre</label>
+      <input type="text" id="fFather" placeholder="Nombre del semental">
+    </div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal('foalModal')">Cancelar</button>
+      <button class="btn-primary btn" onclick="saveFoal()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Entrada -->
+<div class="overlay" id="entryModal">
+  <div class="modal">
+    <h2 id="entryModalTitle">Registrar Etapa</h2>
+    <div class="field">
+      <label>Fecha</label>
+      <input type="date" id="eDate">
+    </div>
+    <div class="field">
+      <label>Etapa de crecimiento</label>
+      <div class="stage-grid" id="stageGrid"></div>
+    </div>
+    <div class="field">
+      <label>Observaciones</label>
+      <textarea id="eNote" placeholder="Peso, altura, comportamiento, vacunas, desparasitación..."></textarea>
+    </div>
+    <div class="field">
+      <label>Peso (kg)</label>
+      <input type="number" id="eWeight" placeholder="Ej. 145">
+    </div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal('entryModal')">Cancelar</button>
+      <button class="btn-primary btn" onclick="saveEntry()">Guardar entrada</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Gestionar Etapas -->
+<div class="overlay" id="stagesModal">
+  <div class="modal" style="max-width:540px">
+    <h2>Gestionar Etapas</h2>
+    <p style="font-family:'Cormorant Garamond',serif;font-size:13px;color:var(--cuero);margin-bottom:18px;font-style:italic">Arrastra para reordenar · Edita el nombre · Agrega o elimina etapas</p>
+    <div id="stagesList" style="display:flex;flex-direction:column;gap:8px;margin-bottom:18px;max-height:340px;overflow-y:auto;padding-right:4px"></div>
+    <div style="display:flex;gap:8px;margin-bottom:6px">
+      <input type="text" id="newStageName" placeholder="Nombre de nueva etapa..." style="flex:1">
+      <button class="btn-primary btn" style="white-space:nowrap" onclick="addStage()">+ Agregar</button>
+    </div>
+    <div style="font-family:'Cormorant Garamond',serif;font-size:11px;color:var(--cuero);letter-spacing:1px;margin-bottom:18px">⚠ Eliminar una etapa no borra los registros que la usen, solo deja de mostrarse en la barra de progreso.</div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal('stagesModal')">Cancelar</button>
+      <button class="btn-primary btn" onclick="saveStages()">Guardar cambios</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let STAGES = JSON.parse(localStorage.getItem('potrillos_stages') || 'null') || [
+  "Neonato (0-7 días)",
+  "Lactante (1-3 sem)",
+  "Potro joven (1-3 m)",
+  "Destete (4-6 m)",
+  "Posdestete (7-12 m)",
+  "Yearling (1 año)",
+  "Dos años",
+  "Iniciación (2-3 a)",
+  "Juvenil (3+ años)"
+];
+let tempStages = [];
+let dragSrcIdx = null;
+
+const EMOJIS = { macho: '🐴', hembra: '🐎' };
+
+let foals = JSON.parse(localStorage.getItem('potrillos_foals') || '[]');
+let currentFilter = 'all';
+let editingFoalId = null;
+let targetFoalId = null;
+let selectedStage = null;
+
+// ── URL del servidor (cambiar en producción) ──
+const API_URL = 'http://localhost:3001';
+
+function save() {
+  localStorage.setItem('potrillos_foals', JSON.stringify(foals));
+  localStorage.setItem('potrillos_stages', JSON.stringify(STAGES));
+  localStorage.setItem('potrillos_pending_sync', '1');
+  if (navigator.onLine) {
+    syncToServer();
+  } else {
+    registerBackgroundSync(); // intentará cuando haya conexión
+  }
+}
+
+// Sincroniza el estado completo al servidor
+async function syncToServer() {
+  if (!navigator.onLine) return;
+  try {
+    const res = await fetch(`${API_URL}/api/sync`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(foals)
+    });
+    if (res.ok) {
+      localStorage.removeItem('potrillos_pending_sync');
+      console.log('✓ Datos sincronizados con MongoDB');
+    }
+  } catch {
+    // Sin conexión o servidor caído — los datos quedan en localStorage
+    localStorage.setItem('potrillos_pending_sync', '1');
+  }
+}
+
+// Carga datos desde el servidor (al arrancar con conexión)
+async function loadFromServer() {
+  if (!navigator.onLine) return;
+  try {
+    const res = await fetch(`${API_URL}/api/foals`);
+    if (!res.ok) return;
+    const serverFoals = await res.json();
+    if (Array.isArray(serverFoals) && serverFoals.length > 0) {
+      foals = serverFoals;
+      localStorage.setItem('potrillos_foals', JSON.stringify(foals));
+      localStorage.removeItem('potrillos_pending_sync');
+      console.log('✓ Datos cargados desde MongoDB:', foals.length, 'potrillos');
+    }
+  } catch {
+    // Usa datos locales si el servidor no responde
+  }
+}
+
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+
+function age(dob) {
+  const d = new Date(dob), now = new Date();
+  const months = (now.getFullYear()-d.getFullYear())*12 + now.getMonth()-d.getMonth();
+  if (months < 1) {
+    const days = Math.floor((now-d)/86400000);
+    return days + (days===1?' día':' días');
+  }
+  if (months < 12) return months + (months===1?' mes':' meses');
+  const yrs = Math.floor(months/12);
+  return yrs + (yrs===1?' año':' años');
+}
+
+function stageIndex(foal) {
+  if (!foal.entries.length) return -1;
+  const last = foal.entries.reduce((a,b)=> new Date(a.date)>new Date(b.date)?a:b);
+  return STAGES.indexOf(last.stage);
+}
+
+function render() {
+  const grid = document.getElementById('grid');
+  const visible = foals.filter(f => currentFilter==='all' || f.sex===currentFilter);
+  if (!visible.length) {
+    grid.innerHTML = `<div class="empty"><div class="empty-icon">🐴</div><h2>Sin potrillos registrados</h2><p>Agrega tu primer potrillo para comenzar el seguimiento.</p></div>`;
+    return;
+  }
+  grid.innerHTML = visible.map((f,i) => cardHTML(f, i)).join('');
+}
+
+function cardHTML(f, i) {
+  const si = stageIndex(f);
+  const dots = STAGES.map((s,idx)=>{
+    const cls = idx < si ? 'done' : idx === si ? 'active' : '';
+    return `<div class="dot ${cls}" data-tip="${s}"></div>`;
+  }).join('');
+  const sorted = [...f.entries].sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,3);
+  const entriesHTML = sorted.length ? sorted.map(e=>`
+    <div class="entry">
+      <div class="entry-dot"></div>
+      <div class="entry-date">${formatDate(e.date)}</div>
+      <div class="entry-text">${e.note||'Sin notas'}${e.weight?` · <b>${e.weight} kg</b>`:''}</div>
+      <span class="entry-stage-badge">${e.stage.split('(')[0].trim()}</span>
+      <div class="entry-actions">
+        <button class="entry-act-btn" title="Editar registro" onclick="openEditEntry('${f.id}','${e.id}')">✏️</button>
+        <button class="entry-act-btn" title="Eliminar registro" onclick="deleteEntry('${f.id}','${e.id}')">🗑</button>
+      </div>
+    </div>`).join('')
+    : '<p style="font-family:Cormorant Garamond,serif;color:var(--cuero);font-size:13px;padding:6px 0">Sin registros aún.</p>';
+
+  return `
+  <div class="card" style="animation-delay:${i*0.07}s">
+    <div class="card-header">
+      <div class="card-avatar">${EMOJIS[f.sex]||'🐴'}</div>
+      <div class="card-title-block">
+        <div class="card-name">${f.name}</div>
+        <div class="card-meta">${f.breed||'Sin raza'} · ${f.dob ? age(f.dob) : '—'}</div>
+        ${f.mother||f.father?`<div class="card-meta" style="margin-top:2px">${f.mother?'♀ '+f.mother:''}${f.mother&&f.father?' · ':''}${f.father?'♂ '+f.father:''}</div>`:''}
+      </div>
+      <div class="card-actions">
+        <button class="icon-btn" title="Editar" onclick="openEditFoal('${f.id}')">✏️</button>
+        <button class="icon-btn" title="Eliminar" onclick="deleteFoal('${f.id}')">🗑</button>
+      </div>
+    </div>
+    <div class="stage-track">
+      <div class="stage-label">Progreso de etapas</div>
+      <div class="stage-dots">${dots}</div>
+    </div>
+    <div class="entries">
+      <div class="entry-title">Últimos registros</div>
+      ${entriesHTML}
+    </div>
+    <div class="card-footer">
+      <div class="footer-stat">
+        <div class="footer-num">${f.entries.length}</div>
+        <div class="footer-lbl">Registros</div>
+      </div>
+      <div class="footer-stat">
+        <div class="footer-num">${si >= 0 ? si+1 : 0}</div>
+        <div class="footer-lbl">Etapa actual</div>
+      </div>
+      <button class="add-entry-btn" onclick="openAddEntry('${f.id}')">+ Registrar etapa</button>
+    </div>
+  </div>`;
+}
+
+function formatDate(d) {
+  const dt = new Date(d+'T00:00:00');
+  return dt.toLocaleDateString('es-MX',{day:'2-digit',month:'short',year:'numeric'});
+}
+
+function setFilter(f, btn) {
+  currentFilter = f;
+  document.querySelectorAll('.toolbar .btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  render();
+}
+
+/* ── FOAL MODAL ── */
+function openAddFoal() {
+  editingFoalId = null;
+  document.getElementById('modalTitle').textContent = 'Nuevo Potrillo';
+  ['fName','fDob','fBreed','fMother','fFather'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('fSex').value='macho';
+  document.getElementById('foalModal').classList.add('open');
+}
+function openEditFoal(id) {
+  const f = foals.find(x=>x.id===id);
+  if (!f) return;
+  editingFoalId = id;
+  document.getElementById('modalTitle').textContent = 'Editar Potrillo';
+  document.getElementById('fName').value = f.name;
+  document.getElementById('fDob').value = f.dob;
+  document.getElementById('fSex').value = f.sex;
+  document.getElementById('fBreed').value = f.breed||'';
+  document.getElementById('fMother').value = f.mother||'';
+  document.getElementById('fFather').value = f.father||'';
+  document.getElementById('foalModal').classList.add('open');
+}
+function saveFoal() {
+  const name = document.getElementById('fName').value.trim();
+  if (!name) { alert('Ingresa el nombre del potrillo.'); return; }
+  if (editingFoalId) {
+    const f = foals.find(x=>x.id===editingFoalId);
+    Object.assign(f, {
+      name, dob: document.getElementById('fDob').value,
+      sex: document.getElementById('fSex').value,
+      breed: document.getElementById('fBreed').value.trim(),
+      mother: document.getElementById('fMother').value.trim(),
+      father: document.getElementById('fFather').value.trim()
+    });
+  } else {
+    foals.push({
+      id: uid(), name, dob: document.getElementById('fDob').value,
+      sex: document.getElementById('fSex').value,
+      breed: document.getElementById('fBreed').value.trim(),
+      mother: document.getElementById('fMother').value.trim(),
+      father: document.getElementById('fFather').value.trim(),
+      entries: []
+    });
+  }
+  save(); closeModal('foalModal'); render();
+}
+function deleteFoal(id) {
+  if (!confirm('¿Eliminar este potrillo y todos sus registros?')) return;
+  foals = foals.filter(f=>f.id!==id);
+  save(); render();
+}
+
+let editingEntryId = null;
+
+/* ── ENTRY MODAL ── */
+function openAddEntry(foalId) {
+  targetFoalId = foalId; selectedStage = null; editingEntryId = null;
+  document.getElementById('entryModalTitle').textContent = 'Registrar Etapa';
+  document.getElementById('eDate').value = new Date().toISOString().slice(0,10);
+  document.getElementById('eNote').value = '';
+  document.getElementById('eWeight').value = '';
+  const sg = document.getElementById('stageGrid');
+  sg.innerHTML = STAGES.map((s,i)=>
+    `<button class="stage-opt" onclick="selectStage(${i},this)">${s}</button>`
+  ).join('');
+  document.getElementById('entryModal').classList.add('open');
+}
+function openEditEntry(foalId, entryId) {
+  const foal = foals.find(f=>f.id===foalId);
+  const entry = foal && foal.entries.find(e=>e.id===entryId);
+  if (!entry) return;
+  targetFoalId = foalId; editingEntryId = entryId;
+  selectedStage = entry.stage;
+  document.getElementById('entryModalTitle').textContent = 'Editar Registro';
+  document.getElementById('eDate').value = entry.date;
+  document.getElementById('eNote').value = entry.note||'';
+  document.getElementById('eWeight').value = entry.weight||'';
+  const sg = document.getElementById('stageGrid');
+  sg.innerHTML = STAGES.map((s,i)=>
+    `<button class="stage-opt${s===entry.stage?' selected':''}" onclick="selectStage(${i},this)">${s}</button>`
+  ).join('');
+  document.getElementById('entryModal').classList.add('open');
+}
+function deleteEntry(foalId, entryId) {
+  if (!confirm('¿Eliminar este registro?')) return;
+  const foal = foals.find(f=>f.id===foalId);
+  if (!foal) return;
+  foal.entries = foal.entries.filter(e=>e.id!==entryId);
+  save(); render();
+}
+function selectStage(i, btn) {
+  selectedStage = STAGES[i];
+  document.querySelectorAll('.stage-opt').forEach(b=>b.classList.remove('selected'));
+  btn.classList.add('selected');
+}
+function saveEntry() {
+  if (!selectedStage) { alert('Selecciona una etapa de crecimiento.'); return; }
+  const foal = foals.find(f=>f.id===targetFoalId);
+  if (!foal) return;
+  if (editingEntryId) {
+    const entry = foal.entries.find(e=>e.id===editingEntryId);
+    if (entry) {
+      entry.date = document.getElementById('eDate').value;
+      entry.stage = selectedStage;
+      entry.note = document.getElementById('eNote').value.trim();
+      entry.weight = document.getElementById('eWeight').value;
+    }
+  } else {
+    foal.entries.push({
+      id: uid(),
+      date: document.getElementById('eDate').value,
+      stage: selectedStage,
+      note: document.getElementById('eNote').value.trim(),
+      weight: document.getElementById('eWeight').value
+    });
+  }
+  save(); closeModal('entryModal'); render();
+}
+
+/* ── STAGES MANAGER ── */
+function openStagesManager() {
+  tempStages = [...STAGES];
+  renderStagesList();
+  document.getElementById('newStageName').value = '';
+  document.getElementById('stagesModal').classList.add('open');
+}
+
+function renderStagesList() {
+  const list = document.getElementById('stagesList');
+  list.innerHTML = tempStages.map((s, i) => `
+    <div class="stage-item" draggable="true" data-idx="${i}"
+      ondragstart="onDragStart(event,${i})"
+      ondragover="onDragOver(event,${i})"
+      ondrop="onDrop(event,${i})"
+      ondragend="onDragEnd(event)"
+    >
+      <span class="drag-handle" title="Arrastrar">⠿</span>
+      <span class="stage-num">${i+1}</span>
+      <input class="stage-input" type="text" value="${s}" data-i="${i}"
+        onchange="tempStages[${i}]=this.value.trim()||tempStages[${i}]"
+        onblur="tempStages[${i}]=this.value.trim()||tempStages[${i}]">
+      <button class="del-stage-btn" title="Eliminar" onclick="removeStage(${i})">×</button>
+    </div>`).join('');
+}
+
+function addStage() {
+  const inp = document.getElementById('newStageName');
+  const val = inp.value.trim();
+  if (!val) { inp.focus(); return; }
+  tempStages.push(val);
+  inp.value = '';
+  renderStagesList();
+  // scroll to bottom
+  const list = document.getElementById('stagesList');
+  list.scrollTop = list.scrollHeight;
+}
+
+function removeStage(i) {
+  if (tempStages.length <= 1) { alert('Debe haber al menos una etapa.'); return; }
+  tempStages.splice(i, 1);
+  renderStagesList();
+}
+
+function saveStages() {
+  // commit any live input changes
+  document.querySelectorAll('.stage-input').forEach(inp => {
+    const i = parseInt(inp.dataset.i);
+    if (!isNaN(i) && inp.value.trim()) tempStages[i] = inp.value.trim();
+  });
+  STAGES = [...tempStages];
+  save();
+  closeModal('stagesModal');
+  render();
+}
+
+/* drag & drop */
+function onDragStart(e, i) {
+  dragSrcIdx = i;
+  e.dataTransfer.effectAllowed = 'move';
+  e.currentTarget.classList.add('dragging');
+}
+function onDragOver(e, i) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  document.querySelectorAll('.stage-item').forEach(el => el.classList.remove('drag-over'));
+  e.currentTarget.classList.add('drag-over');
+}
+function onDrop(e, i) {
+  e.preventDefault();
+  if (dragSrcIdx === null || dragSrcIdx === i) return;
+  const moved = tempStages.splice(dragSrcIdx, 1)[0];
+  tempStages.splice(i, 0, moved);
+  dragSrcIdx = null;
+  renderStagesList();
+}
+function onDragEnd(e) {
+  dragSrcIdx = null;
+  document.querySelectorAll('.stage-item').forEach(el => {
+    el.classList.remove('dragging','drag-over');
+  });
+}
+
+
+
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.overlay').forEach(o=>{
+  o.addEventListener('click', e=>{ if(e.target===o) o.classList.remove('open'); });
+});
+
+// seed demo if empty
+if (!foals.length) {
+  foals = [
+    { id: uid(), name: 'Viento del Norte', dob: '2025-09-14', sex: 'macho', breed: 'Cuarto de Milla', mother: 'Estrella', father: 'Relámpago', entries: [
+      { id: uid(), date: '2025-09-14', stage: 'Neonato (0-7 días)', note: 'Nacimiento sin complicaciones. Peso inicial: 48 kg.', weight: '48' },
+      { id: uid(), date: '2025-10-05', stage: 'Lactante (1-3 sem)', note: 'Buen apetito, reflejos activos.', weight: '72' },
+      { id: uid(), date: '2026-01-10', stage: 'Potro joven (1-3 m)', note: 'Primera vacuna antiinfluenza aplicada.', weight: '130' }
+    ]},
+    { id: uid(), name: 'Luna de Otoño', dob: '2025-10-22', sex: 'hembra', breed: 'Pura Sangre', mother: 'Niebla', father: 'Cielo Azul', entries: [
+      { id: uid(), date: '2025-10-22', stage: 'Neonato (0-7 días)', note: 'Potranca saludable, buena condición corporal.', weight: '45' },
+      { id: uid(), date: '2025-12-01', stage: 'Lactante (1-3 sem)', note: 'Ganando peso adecuadamente.', weight: '68' }
+    ]}
+  ];
+  save();
+}
+
+
+/* ── PWA ── */
+let deferredPrompt = null;
+
+// Register service worker
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js')
+      .then(reg => {
+        console.log('SW registrado:', reg.scope);
+        // Escucha mensajes del SW (Background Sync trigger)
+        navigator.serviceWorker.addEventListener('message', e => {
+          if (e.data && e.data.type === 'TRIGGER_SYNC') {
+            syncToServer();
+          }
+        });
+      })
+      .catch(err => console.warn('SW error:', err));
+  });
+}
+
+// Registra Background Sync cuando se guarda offline
+async function registerBackgroundSync() {
+  if (!('serviceWorker' in navigator) || !('SyncManager' in window)) return;
+  try {
+    const reg = await navigator.serviceWorker.ready;
+    await reg.sync.register('sync-foals');
+  } catch { /* Browser no soporta Background Sync */ }
+}
+
+// Capture install prompt
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  const dismissed = localStorage.getItem('pwa_dismissed');
+  if (!dismissed) {
+    setTimeout(() => document.getElementById('installBanner').classList.add('show'), 2500);
+  }
+});
+
+function installPWA() {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  deferredPrompt.userChoice.then(choice => {
+    deferredPrompt = null;
+    document.getElementById('installBanner').classList.remove('show');
+  });
+}
+
+function dismissInstall() {
+  document.getElementById('installBanner').classList.remove('show');
+  localStorage.setItem('pwa_dismissed', '1');
+}
+
+// App installed event
+window.addEventListener('appinstalled', () => {
+  document.getElementById('installBanner').classList.remove('show');
+  deferredPrompt = null;
+});
+
+// Offline / online detection
+function updateOnlineStatus() {
+  const badge = document.getElementById('offlineBadge');
+  if (!navigator.onLine) {
+    badge.classList.add('show');
+  } else {
+    badge.classList.remove('show');
+  }
+}
+window.addEventListener('online', () => {
+  updateOnlineStatus();
+  // Al recuperar conexión, sincroniza si había cambios pendientes
+  if (localStorage.getItem('potrillos_pending_sync')) {
+    syncToServer().then(() => console.log('✓ Sync pendiente enviado'));
+  }
+});
+window.addEventListener('offline', updateOnlineStatus);
+updateOnlineStatus();
+
+// Carga desde MongoDB al arrancar, luego renderiza
+loadFromServer().then(() => render());
+</script>
+</body>
+</html>
