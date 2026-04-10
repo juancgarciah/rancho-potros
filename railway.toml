@@ -1,0 +1,7 @@
+[build]
+builder = "NIXPACKS"
+buildCommand = "cd server && npm install"
+
+[deploy]
+startCommand = "cd server && node server.js"
+healthcheckPath = "/api/foals"

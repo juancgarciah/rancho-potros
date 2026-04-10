@@ -4,7 +4,14 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 
 const app = express();
-app.use(cors());
+app.use(cors({
+  origin: [
+    'https://juancgarciah.github.io',
+    'http://localhost:5500',
+    'http://127.0.0.1:5500',
+    'null' // para abrir index.html como archivo local
+  ]
+}));
 app.use(express.json({ limit: '2mb' }));
 
 // ── CONEXIÓN MONGODB ATLAS ──
