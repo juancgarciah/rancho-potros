@@ -17,7 +17,7 @@ app.use(express.json({ limit: '2mb' }));
 // ── CONEXIÓN MONGODB ATLAS ──
 mongoose.connect(process.env.MONGODB_URI)
   .then(() => console.log('✓ Conectado a MongoDB Atlas'))
-  .catch(err => { console.error('✗ Error MongoDB:', err.message); process.exit(1); });
+  .catch(err => console.error('✗ Error MongoDB:', err.message));
 
 // ── MODELOS ──
 const entrySchema = new mongoose.Schema({
@@ -132,4 +132,4 @@ app.post('/api/sync', async (req, res) => {
 
 // ── ARRANQUE ──
 const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => console.log(`Servidor escuchando en http://localhost:${PORT}`));
+app.listen(PORT, '0.0.0.0', () => console.log(`Servidor escuchando en http://0.0.0.0:${PORT}`));
